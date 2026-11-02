@@ -1,0 +1,5 @@
+# Supabase 키가 들어 있으므로 git에 올리지 않는다
+.env
+
+# Mac 자동 생성 파일
+.DS_Store
