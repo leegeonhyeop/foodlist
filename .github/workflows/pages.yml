@@ -1,0 +1,53 @@
+# web/ 폴더를 GitHub Pages로 배포
+# main 브랜치에 push하면 자동 실행 (Actions 탭에서 수동 실행도 가능)
+#
+# Supabase 연결: 저장소 Settings → Secrets and variables → Actions → Variables 탭에
+#   SUPABASE_URL, SUPABASE_ANON_KEY 를 등록하면 배포 때 config.js에 들어간다
+#   등록하지 않으면 예시 데이터(demo-data.js)로 동작한다
+#   service_role 키는 등록하지 말 것 (웹페이지는 누구나 소스를 볼 수 있음)
+name: Deploy web to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 배포 폴더 준비 (web/ 복사 + config.js 생성)
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+        run: |
+          mkdir -p _site
+          cp -r web/. _site/
+          node -e '
+            const cfg = { SUPABASE_URL: process.env.SUPABASE_URL || "", SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || "" };
+            require("fs").writeFileSync("_site/config.js", "// GitHub Actions가 저장소 Variables로 만든 설정 (공개 값만)\nwindow.APP_CONFIG = " + JSON.stringify(cfg, null, 2) + ";\n");
+            console.log(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY ? "Supabase 설정 적용" : "Supabase 설정 없음 → 예시 데이터로 배포");
+          '
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

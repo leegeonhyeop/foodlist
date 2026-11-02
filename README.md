@@ -58,6 +58,15 @@ node server.js
 
 브라우저에서 http://localhost:5179 접속. `.env`가 비어 있으면 예시 데이터(`web/demo-data.js`)로 동작합니다.
 
+### 4. 인터넷에 공개 (GitHub Pages)
+
+`main`에 push하면 `.github/workflows/pages.yml`이 `web/` 폴더를 자동 배포합니다.
+주소: https://leegeonhyeop.github.io/foodlist/
+
+- 처음 한 번: 저장소 Settings → Pages → Source를 **GitHub Actions**로 선택
+- Supabase 연결: Settings → Secrets and variables → Actions → **Variables**에 `SUPABASE_URL`, `SUPABASE_ANON_KEY` 등록 후 Actions 탭에서 다시 실행
+- `service_role` 키는 등록하지 않습니다
+
 ## 웹페이지 기능
 
 - 상품명 · 원산지 · 보관법 등 모든 정보에서 검색 (항목 지정 검색 가능)
